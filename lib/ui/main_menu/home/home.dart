@@ -6,6 +6,8 @@ import 'package:flutter/widgets.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:order_payments/bloc/product/product_cubit.dart';
 import 'package:order_payments/model/product.dart';
+import 'package:order_payments/ui/main_menu/components/loading_indicator.dart';
+import 'package:order_payments/ui/main_menu/components/product_card.dart';
 import 'package:order_payments/utils/constant.dart' as Constants;
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -26,11 +28,6 @@ void setupScrollController(context) {
         scrollController.position.pixels) {
       BlocProvider.of<ProductCubit>(context).fetchProduct();
     }
-    // if (scrollController.position.atEdge) {
-    //   if (scrollController.position.pixels != 0) {
-
-    //   }
-    // }
   });
 }
 
@@ -47,6 +44,7 @@ class _HomeState extends State<Home> {
         // Update your UI with the desired changes.
       });
     }();
+    BlocProvider.of<ProductCubit>(context).fetchProduct();
   }
 
   _getDataUser() async {
@@ -61,6 +59,7 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Container(
+      color: Color(0xFFF4F6F8),
       child: Column(
         children: <Widget>[
           Container(
@@ -132,8 +131,85 @@ class _HomeState extends State<Home> {
               ),
             ),
           ),
+          Expanded(child: Container(
+            padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 20),
+            width: MediaQuery.of(context).size.width,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.start,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget> [
+                Text(
+                  "Pilihan Paket",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold, letterSpacing: 1),
+                ),
+                Flexible(
+                  fit: FlexFit.tight,
+                  child: BlocBuilder<ProductCubit, ProductState>(
+                      builder: (context, state) {
+                        if (state is ProductLoadingState && state.isFirstFetch) {
+                          return LoadingIndicator(context);
+                        }
+                        List<Products> products = [];
+                        bool isLoading = false;
+                        if (state is ProductLoadingState) {
+                          products = state.oldProduct;
+                          isLoading = true;
+                        } else if (state is ProductResponseState) {
+                          products = state.product;
+                        }
+
+                        return GridView.builder(
+                          padding: EdgeInsets.symmetric(vertical: 5),
+                          controller: scrollController,
+                          gridDelegate:
+                          const SliverGridDelegateWithMaxCrossAxisExtent(
+                              maxCrossAxisExtent: 200,
+                              childAspectRatio : 3/5 ,
+                              crossAxisSpacing: 10,
+                              mainAxisSpacing: 20),
+                          itemBuilder: (context, index) {
+                            if (index < products.length)
+                              return ProductCard(products[index], context);
+                            else {
+                              Timer(Duration(milliseconds: 30), () {
+                                scrollController.jumpTo(
+                                    scrollController.position.maxScrollExtent);
+                              });
+                              return LoadingIndicator(context);
+                            }
+                          },
+                          itemCount: products.length + (isLoading ? 1 : 0),
+                        );
+
+                        // return ListView.separated(
+                        //   controller: scrollController,
+                        //   itemBuilder: (context, index) {
+                        //     if (index < products.length)
+                        //       return _product(products[index], context);
+                        //     else {
+                        //       Timer(Duration(milliseconds: 30), () {
+                        //         scrollController.jumpTo(
+                        //             scrollController.position.maxScrollExtent);
+                        //       });
+                        //       return _loadingIndicator();
+                        //     }
+                        //   },
+                        //   separatorBuilder: (context, index) {
+                        //     return Divider(
+                        //       color: Colors.grey[400],
+                        //     );
+                        //   },
+                        //
+                        // );
+                      }),
+                )
+              ],
+            ),
+          ))
         ],
       ),
+
     );
   }
 }

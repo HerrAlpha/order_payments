@@ -2,18 +2,18 @@ import 'dart:convert';
 import 'dart:ffi';
 
 import 'package:http/http.dart' as http;
-import 'package:order_payments/model/product.dart';
+import 'package:order_payments/model/product_detail.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
-class ProductRepository {
+class ProductDetailRepository {
 
 
-  Future<List<Products>> getAll(int page) async {
+  Future<ProductDetail> getDetail(int id) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var token = await prefs.getString('acces_token').toString();
 
-    var url = "${dotenv.env['BASE_URL_API']}feed/product?page=${page}";
+    var url = "${dotenv.env['BASE_URL_API']}feed/product/${id}";
     final uri = Uri.parse(url);
     Map <String,String> headers = {
       'x-api-key': "${dotenv.env['X_API_KEY']}",
@@ -25,16 +25,8 @@ class ProductRepository {
     );
 
     if (response.statusCode == 200) {
-      final json = jsonDecode(response.body)['data']['data'] as List;
-      final result = json.map((e) {
-        return Products(
-          id: e['id'],
-          name: e['name'],
-          product_pict: e['product_pict'],
-          price: e['price'],
-          created_at:  e['created_at']
-        );
-      }).toList();
+      final json = jsonDecode(response.body)['data'];
+      final result = ProductDetail.fromJson(json);
       return result;
     } else {
       print("Something wrong  ${response.statusCode}");
