@@ -84,7 +84,7 @@ Widget ProductCard(Products product, BuildContext context) {
                           child: ElevatedButton(
                             onPressed: () {
                               Navigator.of(context).push(MaterialPageRoute(
-                                  builder: (context) => DetailProduct()));
+                                  builder: (context) => DetailProduct(id: product.id,)));
                             },
                             child: Text("Lihat Paket"),
                             style: ButtonStyle(

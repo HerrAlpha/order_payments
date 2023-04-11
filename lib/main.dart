@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:order_payments/bloc/counter/counter_cubit.dart';
 import 'package:order_payments/bloc/product/product_cubit.dart';
 import 'package:order_payments/bloc/product_detail/product_detail_cubit.dart';
 import 'package:order_payments/repository/product_detail.dart';
@@ -30,6 +31,9 @@ class MainApp extends StatelessWidget {
         ),
         BlocProvider<ProductDetailCubit>(
           create: (context) =>ProductDetailCubit(ProductDetailRepository()),
+        ),
+        BlocProvider<CounterCubit>(
+          create: (context) =>CounterCubit(),
         ),
       ],
       child: MaterialApp(
