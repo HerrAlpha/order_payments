@@ -1,42 +1,36 @@
 import 'dart:convert';
 
+import 'package:awesome_dialog/awesome_dialog.dart';
+import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:order_payments/core/colors.dart';
+import 'package:order_payments/core/space.dart';
+import 'package:order_payments/core/text_style.dart';
+import 'package:order_payments/model/user.dart';
 import 'package:order_payments/repository/auth_repository.dart';
-import 'package:order_payments/ui/main_menu/home/home.dart';
+import 'package:order_payments/ui/login/component/main_button.dart';
+import 'package:order_payments/ui/login/component/text_field.dart';
 import 'package:order_payments/ui/main_menu/main_page.dart';
+import 'package:order_payments/ui/register/register_page.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-import '../../model/user.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({Key? key}) : super(key: key);
-
   @override
-  State<LoginPage> createState() => _LoginPageState();
+  _LoginPageState createState() => _LoginPageState();
 }
 
 class _LoginPageState extends State<LoginPage> {
-  final emailController = TextEditingController();
-  final passwordController = TextEditingController();
   final _authRepository = new AuthRepository();
-
+  TextEditingController emailController = TextEditingController();
+  TextEditingController passwordController = TextEditingController();
   User? user;
-
   @override
   void initState() {
-    //
-    // WidgetsBinding.instance.addPostFrameCallback((_){
-    //   () async {
-    //     final SharedPreferences prefs = await SharedPreferences.getInstance();
-    //     dynamic user_data = jsonEncode(prefs.getString('user'));
-    //     User user = User.fromJson(user_data);
-    //     print('as');
-    //   };
-    //
-    // });
     // TODO: implement initState
     () async {
       await _getDataUser();
+
       setState(() {
         // Update your UI with the desired changes.
       });
@@ -55,68 +49,123 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
+
   @override
   Widget build(BuildContext context) {
-    final key = new GlobalKey<ScaffoldState>();
-
-    return Container(
-      key: key,
-      child: Center(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 40),
+    return Scaffold(
+      backgroundColor: blackBG,
+      body: Padding(
+        padding: EdgeInsets.only(top: 50.0),
+        child: SingleChildScrollView(
           child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: <Widget>[
-                Text("Email"),
-                TextField(
-                  controller: emailController,
+            children: [
+              SpaceVH(height: 50.0),
+              Text(
+                'Welcome Back!',
+                style: headline1,
+              ),
+              SpaceVH(height: 10.0),
+              Text(
+                'Please sign in to your account',
+                style: headline3,
+              ),
+              SpaceVH(height: 60.0),
+              TextFieldComponent(
+                controller: emailController,
+                image: 'user.svg',
+                hintTxt: 'Email',
+              ),
+              TextFieldComponent(
+                controller: passwordController,
+                image: 'hide.svg',
+                isObs: true,
+                hintTxt: 'Password',
+              ),
+              SpaceVH(height: 10.0),
+              Align(
+                alignment: Alignment.bottomCenter,
+                child: Column(
+                  children: [
+                    Mainbutton(
+                      onTap: () {
+                        _submitLogin();
+                      },
+                      text: 'Sign in',
+                      btnColor: blueButton,
+                    ),
+                    SpaceVH(height: 20.0),
+                    SpaceVH(height: 20.0),
+                    TextButton(
+                      onPressed: () {},
+                      child: RichText(
+                        text: TextSpan(children: [
+                          TextSpan(
+                            text: 'Don\' have an account? ',
+                            style: headline.copyWith(
+                              fontSize: 14.0,
+                            ),
+                          ),
+                          TextSpan(
+                            text: ' Sign Up',
+                            style: headlineDot.copyWith(
+                              fontSize: 14.0,
+                            ),
+                            recognizer: TapGestureRecognizer()..onTap = () {
+                              Navigator.push(
+                                context,
+                                MaterialPageRoute(builder: (context) => RegisterPage()),
+                              );
+                            },
+                          ),
+                        ]),
+                      ),
+                    )
+                  ],
                 ),
-                SizedBox(
-                  height: 20,
-                ),
-                Text(
-                  "Password",
-                ),
-                TextField(
-                  controller: passwordController,
-                ),
-                SizedBox(
-                  height: 20,
-                ),
-                ElevatedButton(
-                  onPressed: _submitLogin,
-                  child: Text('TextButton'),
-                )
-              ]),
+              )
+            ],
+          ),
         ),
       ),
     );
   }
 
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is disposed.
-    emailController.dispose();
-    passwordController.dispose();
-    super.dispose();
-  }
-
   _submitLogin() async {
-    var response = await _authRepository.login(
-        emailController.text, passwordController.text);
-    final SharedPreferences prefs = await SharedPreferences.getInstance();
-    prefs.setString('user_data', jsonEncode(response['data']['user']));
-    prefs.setString('acces_token', response['data']['token']);
-    Navigator.push(
-      context,
-      MaterialPageRoute(builder: (context) => MainPage()),
-    );
-  }
 
-// void submitLogin(key) {
-//   key.currentState.showSnackBar(new SnackBar(
-//     content: new Text("Sending Message"),
-//   ));
-// }
+    var response = await _authRepository.login(emailController.text, passwordController.text);
+    if(response["error"] != null){
+      print("error");
+      AwesomeDialog(
+          context: context,
+          animType: AnimType.scale,
+          dialogType: DialogType.error,
+          title: 'Error',
+          desc: response["Message"],
+          btnOkIcon: Icons.check_circle,
+          autoHide: const Duration(seconds: 3)
+      ).show();
+    }else{
+      final SharedPreferences prefs = await SharedPreferences.getInstance();
+      prefs.setString('user_data', jsonEncode(response['data']['user']));
+      prefs.setString('acces_token', response['data']['token']);
+      AwesomeDialog(
+          context: context,
+          animType: AnimType.scale,
+          dialogType: DialogType.success,
+          title: 'Success',
+          desc:
+          'Login Berhasil.',
+          btnOkIcon: Icons.check_circle,
+          autoHide: const Duration(seconds: 3),
+          onDismissCallback: (type) {
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(builder: (context) => MainPage()),
+            );
+          }).show();
+    }
+  }
+  void _openDialog(context) {
+
+  }
 }

@@ -1,19 +1,14 @@
-import 'dart:convert';
-import 'dart:ffi';
 
-import 'package:http/http.dart' as http;
-import 'package:order_payments/model/product_detail.dart';
+import 'dart:convert';
+
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-
-class ProductDetailRepository {
-
-
-  Future<ProductDetail> getDetail(int id) async {
+import 'package:http/http.dart' as http;
+class ProfileRepository {
+  Future getProfile() async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var token = await prefs.getString('acces_token').toString();
-
-    var url = "${dotenv.env['BASE_URL_API']}feed/product/${id}";
+    var url = "${dotenv.env['BASE_URL_API']}profile";
     final uri = Uri.parse(url);
     Map <String,String> headers = {
       'x-api-key': "${dotenv.env['X_API_KEY']}",
@@ -25,14 +20,10 @@ class ProductDetailRepository {
     );
 
     if (response.statusCode == 200) {
-      final json = jsonDecode(response.body)['data'];
-      final result = ProductDetail.fromJson(json);
-      return result;
+      return jsonDecode(response.body);
     } else {
       print("Something wrong  ${response.statusCode}");
       throw "Something wrong  ${response.statusCode}";
     }
   }
-
-
 }

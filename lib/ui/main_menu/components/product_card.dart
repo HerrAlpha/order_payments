@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:cached_network_image/cached_network_image.dart';
+import 'package:order_payments/model/product.dart';
 import 'package:order_payments/ui/detail_product/detail_product.dart';
 import 'package:order_payments/ui/main_menu/components/loading_indicator.dart';
 import 'package:order_payments/utils/format_currency.dart';
-import '../../../model/product.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 Widget ProductCard(Products product, BuildContext context) {

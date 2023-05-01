@@ -10,8 +10,9 @@ class ProductInitialState extends ProductState {
 class ProductLoadingState extends ProductState {
   final List<Products> oldProduct;
   final bool isFirstFetch;
+  final bool isSearch;
 
-  ProductLoadingState(this.oldProduct, {this.isFirstFetch = false});
+  ProductLoadingState(this.oldProduct, {this.isFirstFetch = false,this.isSearch = false});
 }
 
 class ProductErrorState extends ProductState {

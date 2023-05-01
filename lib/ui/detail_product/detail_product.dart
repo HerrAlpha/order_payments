@@ -1,3 +1,4 @@
+import 'package:awesome_dialog/awesome_dialog.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -6,8 +7,11 @@ import 'package:order_payments/bloc/product_detail/product_detail_cubit.dart';
 import 'package:order_payments/model/product_detail.dart';
 import 'package:flutter_dotenv/flutter_dotenv.dart';
 import 'package:order_payments/ui/detail_product/component/counter.dart';
+import 'package:order_payments/ui/main_menu/main_page.dart';
 import 'package:order_payments/utils/constant.dart' as Constants;
 import 'package:order_payments/utils/format_currency.dart';
+
+import '../../repository/checkout_product_repository.dart';
 
 class DetailProduct extends StatefulWidget {
   final int id;
@@ -19,8 +23,9 @@ class DetailProduct extends StatefulWidget {
 }
 
 class _DetailProductState extends State<DetailProduct> {
+  final _checkoutProductRepository = new CheckoutProductRepository();
   final int id;
-  int total = 2;
+  int total = 1;
 
   _DetailProductState(this.id);
 
@@ -216,16 +221,22 @@ class _DetailProductState extends State<DetailProduct> {
                       ]),
                 ),
                 Container(
-                  child: ElevatedButton(
-                    onPressed: () {},
-                    child: Text("Checkout"),
-                    style: ButtonStyle(
-                      backgroundColor:
-                          MaterialStateProperty.all(Color(0xFF1F2430)),
-                      padding: MaterialStateProperty.all<EdgeInsets>(
-                          EdgeInsets.symmetric(horizontal: 30, vertical: 12)),
-                    ),
-                  ),
+                  child: BlocBuilder<CounterCubit, CounterInitial>(
+                      builder: (context, state) {
+                    return ElevatedButton(
+                      onPressed: () {
+                        _checkoutProduct(productDetail.id!, state.counterValue);
+                        BlocProvider.of<CounterCubit>(context).reset();
+                      },
+                      child: Text("Checkout"),
+                      style: ButtonStyle(
+                        backgroundColor:
+                            MaterialStateProperty.all(Color(0xFF1F2430)),
+                        padding: MaterialStateProperty.all<EdgeInsets>(
+                            EdgeInsets.symmetric(horizontal: 30, vertical: 12)),
+                      ),
+                    );
+                  }),
                 ),
               ],
             ),
@@ -233,5 +244,43 @@ class _DetailProductState extends State<DetailProduct> {
         );
       },
     );
+  }
+
+  _checkoutProduct(int product_id, int qty) async {
+    var isLoading = true;
+    if (isLoading) {
+      CircularProgressIndicator();
+    }
+    var response =
+        await _checkoutProductRepository.checkoutProduct(product_id, qty);
+    isLoading = false;
+    if (response["error"] != null) {
+      print("error");
+      AwesomeDialog(
+              context: context,
+              animType: AnimType.scale,
+              dialogType: DialogType.error,
+              title: 'Error',
+              desc: response["Message"],
+              btnOkIcon: Icons.check_circle,
+              autoHide: const Duration(seconds: 2))
+          .show();
+    } else {
+      isLoading = false;
+      AwesomeDialog(
+          context: context,
+          animType: AnimType.scale,
+          dialogType: DialogType.success,
+          title: 'Success',
+          desc: 'Pesanan akan segera diproses',
+          btnOkIcon: Icons.check_circle,
+          autoHide: const Duration(seconds: 3),
+          onDismissCallback: (type) {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => MainPage()),
+            );
+          }).show();
+    }
   }
 }

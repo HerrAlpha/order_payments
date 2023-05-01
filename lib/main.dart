@@ -1,10 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:order_payments/bloc/counter/counter_cubit.dart';
+import 'package:order_payments/bloc/investment/investment_cubit.dart';
+import 'package:order_payments/bloc/investment_history/investment_history_cubit.dart';
 import 'package:order_payments/bloc/product/product_cubit.dart';
 import 'package:order_payments/bloc/product_detail/product_detail_cubit.dart';
+import 'package:order_payments/bloc/transaction_resto/transaction_resto_cubit.dart';
+import 'package:order_payments/model/investment_history.dart';
+import 'package:order_payments/repository/investment_feed_repository.dart';
+import 'package:order_payments/repository/investment_history_repository.dart';
 import 'package:order_payments/repository/product_detail.dart';
-import 'package:order_payments/repository/product_repository.dart';
+import 'package:order_payments/repository/product_feed_repository.dart';
+import 'package:order_payments/repository/transaction_resto_repository.dart';
 import 'package:order_payments/ui/login/login_page.dart';
 import 'package:order_payments/ui/main_menu/main_page.dart';
 import 'package:google_fonts/google_fonts.dart';
@@ -19,9 +26,6 @@ Future main() async {
 
 class MainApp extends StatelessWidget {
   const MainApp({super.key});
-
-  
-
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
@@ -30,17 +34,26 @@ class MainApp extends StatelessWidget {
           create: (context) => ProductCubit(ProductRepository()),
         ),
         BlocProvider<ProductDetailCubit>(
-          create: (context) =>ProductDetailCubit(ProductDetailRepository()),
+          create: (context) => ProductDetailCubit(ProductDetailRepository()),
         ),
         BlocProvider<CounterCubit>(
-          create: (context) =>CounterCubit(),
+          create: (context) => CounterCubit(),
+        ),
+        BlocProvider<TransactionRestoCubit>(
+          create: (context) => TransactionRestoCubit(TransactionRestoRepository()),
+        ),
+        BlocProvider<InvestmentCubit>(
+          create: (context) => InvestmentCubit(InvestmentRepository()),
+        ),
+        BlocProvider<InvestmentHistoryCubit>(
+          create: (context) => InvestmentHistoryCubit(InvestmentHistoryRepository()),
         ),
       ],
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
-            primaryColor: Constants.PRIMARY_COLOR,
-            fontFamily: 'Poppins',
+          primaryColor: Constants.PRIMARY_COLOR,
+          fontFamily: 'Poppins',
         ),
         home: Scaffold(
           body: Center(

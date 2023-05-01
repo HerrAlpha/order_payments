@@ -9,11 +9,10 @@ import 'package:shared_preferences/shared_preferences.dart';
 class ProductRepository {
 
 
-  Future<List<Products>> getAll(int page) async {
+  Future<List<Products>> getAll(int page,[String search = ""]) async {
     final SharedPreferences prefs = await SharedPreferences.getInstance();
     var token = await prefs.getString('acces_token').toString();
-
-    var url = "${dotenv.env['BASE_URL_API']}feed/product?page=${page}";
+    var url = "${dotenv.env['BASE_URL_API']}feed/product?page=${page}&keyword=${search}";
     final uri = Uri.parse(url);
     Map <String,String> headers = {
       'x-api-key': "${dotenv.env['X_API_KEY']}",

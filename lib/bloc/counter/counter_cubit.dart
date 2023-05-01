@@ -14,6 +14,10 @@ class CounterCubit extends Cubit<CounterInitial> {
     if(state.counterValue != 0){
       emit(CounterInitial(counterValue: state.counterValue - 1));
     }
-
+  }
+  void reset() {
+    if(state.counterValue != 0){
+      emit(CounterInitial(counterValue: 1));
+    }
   }
 }
